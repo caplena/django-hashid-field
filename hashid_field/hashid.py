@@ -6,17 +6,19 @@ from hashids import Hashids, _is_uint
 
 @total_ordering
 class Hashid(object):
-    def __init__(self, id, salt='', min_length=0, alphabet=Hashids.ALPHABET, hashids=None):
+    def __init__(self, id, salt='', min_length=0, alphabet=Hashids.ALPHABET, hashids=None, prefix=None):
         if hashids is None:
             self._salt = salt
             self._min_length = min_length
             self._alphabet = alphabet
+            self._prefix = prefix
             self._hashids = Hashids(salt=self._salt, min_length=self._min_length, alphabet=self._alphabet)
         else:
             self._hashids = hashids
             self._salt = hashids._salt
             self._min_length = hashids._min_length
             self._alphabet = hashids._alphabet
+            self._prefix = prefix
 
         # First see if we were given an already-encoded and valid Hashids string
         value = self.decode(id)
@@ -49,9 +51,15 @@ class Hashid(object):
         return self._hashids
 
     def encode(self, id):
-        return self._hashids.encode(id)
+        hid = self._hashids.encode(id)
+        if self._prefix:
+            return '%s_%s' % (self._prefix, hid)
+        return hid
 
     def decode(self, hashid):
+        if isinstance(hashid, str) and self._prefix is not None and hashid.startswith(self._prefix):
+            hashid = hashid[len(self._prefix) + 1:]
+
         id = self._hashids.decode(hashid)
         if len(id) == 1:
             return id[0]
@@ -72,7 +80,7 @@ class Hashid(object):
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._id == other._id and self._hashid == other._hashid
+            return self._id == other._id and self._hashid == other._hashid and self._prefix == other._prefix
         if isinstance(other, str):
             return self._hashid == other
         if isinstance(other, int):
