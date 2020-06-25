@@ -36,7 +36,7 @@ class HashidFieldMixin(object):
 
     def __init__(self, salt=settings.HASHID_FIELD_SALT, min_length=settings.HASHID_FIELD_MIN_LENGTH, alphabet=settings.HASHID_FIELD_ALPHABET,
                  allow_int_lookup=settings.HASHID_FIELD_ALLOW_INT_LOOKUP, prefix=None, *args, **kwargs):
-        self.salt = salt
+        self.salt = "{}_{}".format(prefix, salt) if prefix is not None else salt
         self.min_length = min_length
         self.alphabet = alphabet
         self.prefix = prefix
