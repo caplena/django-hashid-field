@@ -26,7 +26,7 @@ class HashidDescriptor(object):
             self._hashids_cpp = Hashids_cpp(self.salt, self.min_length, self.alphabet)
         else:
             self._hashids = hashids
-            self._hashids_cpp = Hashids_cpp(self.salt, self.min_length, self.alphabet)
+            self._hashids_cpp = hashids_cpp
 
     def __get__(self, instance, owner=None):
         if instance is not None and self.name in instance.__dict__:
