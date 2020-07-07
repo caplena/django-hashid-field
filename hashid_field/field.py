@@ -6,6 +6,7 @@ from django.core import exceptions, checks
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.admin import widgets as admin_widgets
+from hashids_cpp import Hashids as Hashids_cpp
 from hashids import Hashids
 
 from .lookups import HashidExactLookup, HashidIterableLookup
@@ -44,6 +45,7 @@ class HashidFieldMixin(object):
         if _alphabet_unique_len(self.alphabet) < 16:
             raise exceptions.ImproperlyConfigured("'alphabet' must contain a minimum of 16 unique characters")
         self._hashids = Hashids(salt=self.salt, min_length=self.min_length, alphabet=self.alphabet)
+        self._hashids_cpp = Hashids_cpp(self.salt, self.min_length, self.alphabet)
         if 'allow_int' in kwargs:
             warnings.warn("The 'allow_int' parameter was renamed to 'allow_int_lookup'.", DeprecationWarning, stacklevel=2)
             allow_int_lookup = kwargs['allow_int']
@@ -89,7 +91,7 @@ class HashidFieldMixin(object):
         return []
 
     def encode_id(self, id):
-        return Hashid(id, hashids=self._hashids, prefix=self.prefix)
+        return Hashid(id, hashids=self._hashids, hashids_cpp=self._hashids_cpp, prefix=self.prefix)
 
     if django.VERSION < (2, 0):
         def from_db_value(self, value, expression, connection, context):
@@ -142,7 +144,7 @@ class HashidFieldMixin(object):
     def contribute_to_class(self, cls, name, **kwargs):
         super().contribute_to_class(cls, name, **kwargs)
         # setattr(cls, "_" + self.attname, getattr(cls, self.attname))
-        setattr(cls, self.attname, HashidDescriptor(self.attname, hashids=self._hashids, prefix=self.prefix))
+        setattr(cls, self.attname, HashidDescriptor(self.attname, hashids=self._hashids, hashids_cpp=self._hashids_cpp, prefix=self.prefix))
 
 
 class HashidField(HashidFieldMixin, models.IntegerField):

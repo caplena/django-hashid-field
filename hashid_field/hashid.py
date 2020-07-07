@@ -1,20 +1,23 @@
 import sys
 from functools import total_ordering
 
+from hashids_cpp import Hashids as Hashids_cpp
 from hashids import Hashids, _is_uint
 
 
 @total_ordering
 class Hashid(object):
-    def __init__(self, id, salt='', min_length=0, alphabet=Hashids.ALPHABET, hashids=None, prefix=None):
+    def __init__(self, id, salt='', min_length=0, alphabet=Hashids.ALPHABET, hashids=None, hashids_cpp=None, prefix=None):
         if hashids is None:
             self._salt = salt
             self._min_length = min_length
             self._alphabet = alphabet
             self._prefix = prefix
             self._hashids = Hashids(salt=self._salt, min_length=self._min_length, alphabet=self._alphabet)
+            self._hashids_cpp = Hashids_cpp(self._salt, self._min_length, self._alphabet)
         else:
             self._hashids = hashids
+            self._hashids_cpp = hashids_cpp
             self._salt = hashids._salt
             self._min_length = hashids._min_length
             self._alphabet = hashids._alphabet
@@ -51,7 +54,8 @@ class Hashid(object):
         return self._hashids
 
     def encode(self, id):
-        hid = self._hashids.encode(id)
+        hid = self._hashids_cpp.encode_int(id)
+
         if self._prefix:
             return '%s_%s' % (self._prefix, hid)
         return hid

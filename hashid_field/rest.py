@@ -2,6 +2,7 @@ from django.apps import apps
 from django.core import exceptions
 
 from hashids import Hashids
+from hashids_cpp import Hashids as Hashids_cpp
 from rest_framework import fields, serializers
 
 from hashid_field.conf import settings
@@ -40,6 +41,7 @@ class HashidSerializerMixin(object):
             self.hashid_salt, self.hashid_min_length, self.hashid_alphabet, self.hashid_prefix = \
                 source_field.salt, source_field.min_length, source_field.alphabet, source_field.prefix
         self._hashids = Hashids(salt=self.hashid_salt, min_length=self.hashid_min_length, alphabet=self.hashid_alphabet)
+        self._hashids_cpp = Hashids_cpp(self.hashid_salt, self.hashid_min_length, self.hashid_alphabet)
         super().__init__(**kwargs)
 
     def to_internal_value(self, data):
@@ -47,7 +49,7 @@ class HashidSerializerMixin(object):
             value = super().to_internal_value(data)
             if isinstance(value, str) and self.hashid_prefix is not None and value.startswith(self.hashid_prefix):
                 value = value[len(self.hashid_prefix) + 1:]
-            return Hashid(value, hashids=self._hashids)
+            return Hashid(value, hashids=self._hashids, hashids_cpp=self._hashids_cpp)
         except ValueError:
             raise serializers.ValidationError("Invalid int or Hashid string")
 
