@@ -58,9 +58,14 @@ class Hashid(object):
 
         if self._prefix:
             return '%s_%s' % (self._prefix, hid)
-        return hid
+        else:
+            return hid
 
     def decode(self, hashid):
+        # Shortcut, to not do unnecessary computation
+        if type(hashid) == int:
+            return None
+
         if isinstance(hashid, str) and self._prefix is not None:
             if hashid.startswith(self._prefix):
                 hashid = hashid[len(self._prefix) + 1:]
