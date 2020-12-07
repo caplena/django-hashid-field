@@ -51,7 +51,7 @@ class HashidSerializerMixin(object):
                 value = value[len(self.hashid_prefix) + 1:]
             return Hashid(value, hashids=self._hashids, hashids_cpp=self._hashids_cpp)
         except ValueError:
-            raise serializers.ValidationError("Invalid int or Hashid string")
+            raise serializers.ValidationError("Invalid id format.")
 
 
 class HashidSerializerCharField(HashidSerializerMixin, fields.CharField):
