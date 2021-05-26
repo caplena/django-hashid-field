@@ -7,7 +7,16 @@ from hashids import Hashids, _is_uint
 
 @total_ordering
 class Hashid(object):
-    def __init__(self, id, salt='', min_length=0, alphabet=Hashids.ALPHABET, hashids=None, hashids_cpp=None, prefix=None):
+    def __init__(
+        self,
+        id,
+        salt='',
+        min_length=0,
+        alphabet=Hashids.ALPHABET,
+        hashids=None,
+        hashids_cpp=None,
+        prefix=None
+    ):
         if hashids is None:
             self._salt = salt
             self._min_length = min_length
@@ -39,7 +48,9 @@ class Hashid(object):
 
             # Finally, set our internal values
             self._id = id
-            self._hashid = self.encode(id)
+            # If the id is numerical, we only lazily compute the hashid itself
+            # as it might not be always needed
+            self._hashid = None
 
     @property
     def id(self):
@@ -47,6 +58,10 @@ class Hashid(object):
 
     @property
     def hashid(self):
+        """ Compute the hashid lazily, if it is not already computed """
+        if self._hashid is None:
+            self._hashid = self.encode(self.id)
+
         return self._hashid
 
     @property
@@ -79,38 +94,38 @@ class Hashid(object):
             return None
 
     def __repr__(self):
-        return "Hashid({}): {}".format(self._id, self._hashid)
+        return "Hashid({}): {}".format(self.id, self.hashid)
 
     def __str__(self):
-        return self._hashid
+        return self.hashid
 
     def __int__(self):
-        return self._id
+        return self.id
 
     def __long__(self):
-        return int(self._id)
+        return int(self.id)
 
     def __eq__(self, other):
         if isinstance(other, self.__class__):
-            return self._id == other._id and self._hashid == other._hashid and self._prefix == other._prefix
+            return self.id == other.id and self.hashid == other.hashid and self._prefix == other._prefix
         if isinstance(other, str):
-            return self._hashid == other
+            return self.hashid == other
         if isinstance(other, int):
-            return self._id == other
+            return self.id == other
         return NotImplemented
 
     def __lt__(self, other):
         if isinstance(other, self.__class__):
-            return self._id < other._id
-        if isinstance(other, type(self._id)):
-            return self._id < other
+            return self.id < other.id
+        if isinstance(other, type(self.id)):
+            return self.id < other
         return NotImplemented
 
     def __len__(self):
-        return len(self._hashid)
+        return len(self.hashid)
 
     def __hash__(self):
-        return hash(self._hashid)
+        return hash(self.hashid)
 
     def __reduce__(self):
-        return (self.__class__, (self._id, self._salt, self._min_length, self._alphabet))
+        return (self.__class__, (self.id, self._salt, self._min_length, self._alphabet))
