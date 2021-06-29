@@ -38,10 +38,11 @@ class Hashid(object):
             self._id = value
             self._hashid = id
         else:
-            # We are strict here, only accept real ints, don't try to cast strings
-            if not isinstance(id, int):
-                raise ValueError("id must be of type int or valid Hashid value")
-
+            # Next see if it's a positive integer
+            try:
+                id = int(id)
+            except (TypeError, ValueError):
+                raise ValueError("id must be a positive integer or valid Hashid value")
             if not _is_uint(id):
                 raise ValueError("id must be a positive integer")
 
